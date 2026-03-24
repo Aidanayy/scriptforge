@@ -202,13 +202,37 @@ def patterns_summary(analyses: list[dict], model: str = "claude-sonnet-4-6") -> 
     return message.content[0].text.strip()
 
 
+# ── MP4 transcription ─────────────────────────────────────────────────────────
+
+def transcribe_mp4(uploaded_file, whisper_model: str = "base") -> dict:
+    """Transcribe an uploaded MP4 file directly using Whisper."""
+    import whisper
+
+    with tempfile.TemporaryDirectory() as tmp:
+        video_path = os.path.join(tmp, uploaded_file.name)
+        with open(video_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        model = whisper.load_model(whisper_model)
+        result = whisper.transcribe(model, video_path)
+        transcript = result["text"].strip()
+
+    return {
+        "url": uploaded_file.name,
+        "platform": "mp4",
+        "transcript": transcript,
+        "title": Path(uploaded_file.name).stem,
+        "method": "whisper",
+    }
+
+
 # ── Streamlit UI ──────────────────────────────────────────────────────────────
 
 def render():
     st.markdown(
         "<h1 style='font-size:1.8rem;font-weight:900;margin-bottom:4px;'>🎥 Video Analyser</h1>"
-        "<div style='color:#888;font-size:0.85rem;margin-bottom:24px;'>"
-        "Paste YouTube or TikTok URLs to transcribe and analyse what makes them high-performing.</div>",
+        "<div style='color:#555;font-size:0.85rem;margin-bottom:24px;'>"
+        "Upload MP4 files or paste YouTube / TikTok URLs to transcribe and analyse what makes them high-performing.</div>",
         unsafe_allow_html=True,
     )
 
@@ -220,47 +244,110 @@ def render():
     model       = st.session_state.get("model", "claude-sonnet-4-6")
     whisper_mdl = st.session_state.get("whisper_model", "base")
 
-    # ── URL input ─────────────────────────────────────────────────────────────
-    st.markdown("#### Paste video URLs (one per line, up to 8)")
-    urls_text = st.text_area(
-        "URLs",
-        label_visibility="collapsed",
-        height=180,
-        placeholder="https://www.youtube.com/watch?v=...\nhttps://www.tiktok.com/@user/video/...",
-        key="analyser_urls",
-    )
+    # ── Profile selector ──────────────────────────────────────────────────────
+    from modules.storage import list_profiles
+    profiles = list_profiles()
+    if profiles:
+        selected_profile = st.selectbox(
+            "Profile these videos belong to",
+            ["— No profile —"] + profiles,
+            key="analyser_profile",
+            help="Tag this analysis to a profile so it only shows up for that profile in the script generator.",
+        )
+        st.session_state["analyser_selected_profile"] = selected_profile if selected_profile != "— No profile —" else None
+    else:
+        st.session_state["analyser_selected_profile"] = None
 
-    col_btn, col_save = st.columns([2, 1])
-    run_btn  = col_btn.button("🔍 Analyse Videos", type="primary", use_container_width=True)
-    save_btn = col_save.button("💾 Save Analysis", use_container_width=True)
+    st.divider()
 
-    # ── Run analysis ──────────────────────────────────────────────────────────
-    if run_btn:
-        urls = [u.strip() for u in urls_text.strip().splitlines() if u.strip()][:8]
-        if not urls:
-            st.error("Paste at least one URL.")
-            return
+    # ── Input tabs ────────────────────────────────────────────────────────────
+    tab_mp4, tab_url = st.tabs(["📁 Upload MP4", "🔗 Paste URL"])
 
-        results  = []
-        progress = st.progress(0, text="Starting…")
-        total_in = total_out = 0
+    with tab_mp4:
+        uploaded_files = st.file_uploader(
+            "Drop your MP4 files here (up to 8)",
+            type=["mp4"],
+            accept_multiple_files=True,
+            label_visibility="collapsed",
+        )
+        if uploaded_files and len(uploaded_files) > 8:
+            st.warning("Maximum 8 files at once — only the first 8 will be processed.")
+            uploaded_files = uploaded_files[:8]
 
-        for i, url in enumerate(urls):
-            progress.progress((i) / len(urls), text=f"Processing {i+1}/{len(urls)}: {url[:60]}…")
-            try:
-                with st.spinner(f"Transcribing {url[:60]}…"):
-                    transcription = transcribe_video(url, whisper_mdl)
-                with st.spinner("Analysing with Claude…"):
-                    analysis = analyse_video(transcription, model)
-                    total_in  += analysis.get("_usage", {}).get("input_tokens", 0)
-                    total_out += analysis.get("_usage", {}).get("output_tokens", 0)
-                results.append(analysis)
-            except Exception as e:
-                st.error(f"❌ Failed on `{url}`: {e}")
+        col_btn_mp4, col_save_mp4 = st.columns([2, 1])
+        run_mp4  = col_btn_mp4.button("🔍 Analyse Videos", type="primary", use_container_width=True, key="run_mp4")
+        save_mp4 = col_save_mp4.button("💾 Save Analysis", use_container_width=True, key="save_mp4")
 
-        progress.progress(1.0, text="Done!")
-        st.session_state["current_analyses"] = results
-        st.info(f"🔢 Token usage — Input: {total_in:,} | Output: {total_out:,} | Est. cost: ~${(total_in*0.000003 + total_out*0.000015):.4f}")
+        if run_mp4:
+            if not uploaded_files:
+                st.error("Upload at least one MP4 file.")
+            else:
+                results  = []
+                progress = st.progress(0, text="Starting…")
+                total_in = total_out = 0
+
+                for i, f in enumerate(uploaded_files):
+                    progress.progress(i / len(uploaded_files), text=f"Processing {i+1}/{len(uploaded_files)}: {f.name}…")
+                    try:
+                        with st.spinner(f"Transcribing {f.name}…"):
+                            transcription = transcribe_mp4(f, whisper_mdl)
+                        with st.spinner("Analysing with Claude…"):
+                            analysis = analyse_video(transcription, model)
+                            total_in  += analysis.get("_usage", {}).get("input_tokens", 0)
+                            total_out += analysis.get("_usage", {}).get("output_tokens", 0)
+                        results.append(analysis)
+                    except Exception as e:
+                        st.error(f"❌ Failed on `{f.name}`: {e}")
+
+                progress.progress(1.0, text="Done!")
+                st.session_state["current_analyses"] = results
+                st.info(f"🔢 Token usage — Input: {total_in:,} | Output: {total_out:,} | Est. cost: ~${(total_in*0.000003 + total_out*0.000015):.4f}")
+
+        if save_mp4:
+            _save_current_analyses()
+
+    with tab_url:
+        st.markdown("#### Paste video URLs (one per line, up to 8)")
+        urls_text = st.text_area(
+            "URLs",
+            label_visibility="collapsed",
+            height=160,
+            placeholder="https://www.youtube.com/watch?v=...\nhttps://www.tiktok.com/@user/video/...",
+            key="analyser_urls",
+        )
+
+        col_btn, col_save = st.columns([2, 1])
+        run_btn  = col_btn.button("🔍 Analyse Videos", type="primary", use_container_width=True, key="run_url")
+        save_btn = col_save.button("💾 Save Analysis", use_container_width=True, key="save_url")
+
+        if run_btn:
+            urls = [u.strip() for u in urls_text.strip().splitlines() if u.strip()][:8]
+            if not urls:
+                st.error("Paste at least one URL.")
+            else:
+                results  = []
+                progress = st.progress(0, text="Starting…")
+                total_in = total_out = 0
+
+                for i, url in enumerate(urls):
+                    progress.progress(i / len(urls), text=f"Processing {i+1}/{len(urls)}: {url[:60]}…")
+                    try:
+                        with st.spinner(f"Transcribing {url[:60]}…"):
+                            transcription = transcribe_video(url, whisper_mdl)
+                        with st.spinner("Analysing with Claude…"):
+                            analysis = analyse_video(transcription, model)
+                            total_in  += analysis.get("_usage", {}).get("input_tokens", 0)
+                            total_out += analysis.get("_usage", {}).get("output_tokens", 0)
+                        results.append(analysis)
+                    except Exception as e:
+                        st.error(f"❌ Failed on `{url}`: {e}")
+
+                progress.progress(1.0, text="Done!")
+                st.session_state["current_analyses"] = results
+                st.info(f"🔢 Token usage — Input: {total_in:,} | Output: {total_out:,} | Est. cost: ~${(total_in*0.000003 + total_out*0.000015):.4f}")
+
+        if save_btn:
+            _save_current_analyses()
 
     # ── Display results ───────────────────────────────────────────────────────
     analyses = st.session_state.get("current_analyses", [])
@@ -268,7 +355,6 @@ def render():
         st.divider()
         st.markdown(f"### {len(analyses)} Video(s) Analysed")
 
-        # Multiselect for which to use in script generation
         titles = [a.get("_title", a.get("_url", f"Video {i+1}")) for i, a in enumerate(analyses)]
         selected = st.multiselect(
             "Select analyses to use for script generation",
@@ -279,7 +365,6 @@ def render():
         )
         st.session_state["selected_analyses"] = [analyses[i] for i in selected]
 
-        # Key patterns summary
         if len(analyses) >= 2 and st.button("✨ Generate Key Patterns Summary", use_container_width=True):
             with st.spinner("Synthesising patterns…"):
                 try:
@@ -290,15 +375,13 @@ def render():
 
         if "patterns_summary" in st.session_state:
             st.markdown(
-                "<div style='background:#f0f7ff;border-left:4px solid #4A90D9;border-radius:8px;"
-                "padding:16px;margin:12px 0;'>"
-                "<b style='font-size:0.9rem;'>🔑 Key Patterns Across All Videos</b><br><br>"
+                "<div class='insight-box'>"
+                "<div class='insight-label'>🔑 Key Patterns Across All Videos</div>"
                 + st.session_state["patterns_summary"].replace("\n", "<br>") +
                 "</div>",
                 unsafe_allow_html=True,
             )
 
-        # Individual analysis cards
         for i, analysis in enumerate(analyses):
             with st.expander(f"📹 Video {i+1}: {analysis.get('_title', analysis.get('_url', ''))[:80]}", expanded=i==0):
                 hook = analysis.get("hook", {})
@@ -321,13 +404,18 @@ def render():
                 for t in analysis.get("engagement_triggers", []):
                     st.markdown(f"- {t}")
 
-    # ── Save analysis ─────────────────────────────────────────────────────────
-    if save_btn:
-        analyses = st.session_state.get("current_analyses", [])
-        if not analyses:
-            st.error("No analyses to save. Run the analyser first.")
-        else:
-            from modules.storage import save_analysis, timestamp_name
-            name = timestamp_name("analysis")
-            save_analysis(name, analyses)
-            st.success(f"✅ Saved as `{name}`")
+
+def _save_current_analyses():
+    analyses = st.session_state.get("current_analyses", [])
+    if not analyses:
+        st.error("No analyses to save. Run the analyser first.")
+    else:
+        from modules.storage import save_analysis, timestamp_name
+        profile_tag = st.session_state.get("analyser_selected_profile")
+        if profile_tag:
+            for a in analyses:
+                a["_profile"] = profile_tag
+        name = timestamp_name("analysis")
+        save_analysis(name, analyses)
+        label = f" [{profile_tag}]" if profile_tag else ""
+        st.success(f"✅ Saved as `{name}`{label}")

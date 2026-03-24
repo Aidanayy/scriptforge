@@ -32,67 +32,75 @@ HOOK_STYLES = [
 ]
 
 GENERATE_SYSTEM_PROMPT = """You are an expert short-form video scriptwriter specialising in TikTok and Instagram Reels.
-You write scripts for real creators with real audiences. Quality over quantity — every script must be genuinely scroll-stopping.
+Your only job is to write scripts that keep people watching. Retention is everything.
+Every word earns its place. If a line doesn't pull the viewer forward, cut it.
 
 CORE RULES:
-- Hook lands in the first 3 seconds — impossible to scroll past
-- Natural SPOKEN words only. One short sentence per line. Never paragraphs.
-- Ultra short sentences. Direct. Punchy. UK English always (mum not mom, £ not $).
-- No two scripts use the same hook format
-- Scripts range 25–40 seconds. Vary the length across the batch.
+- Hook lands in the first 3 seconds — the viewer must feel they cannot leave
+- Natural SPOKEN words only. One short sentence per line. Never paragraphs or lists.
+- Ultra short sentences. Direct. Punchy. Conversational. UK English always (mum not mom, £ not $).
+- No two scripts use the same hook format or structure
+- Scripts range 25–40 seconds. Vary the length — not all the same.
+- Do NOT mention specific tools or apps unless they are central to the story
+- Do NOT write filming directions — the creator handles all production
+- Focus entirely on the words. Make every line pull the viewer into the next.
 
-HOOK FORMATS (ranked by what actually performs — use these):
-1. Time challenge: "X minutes in [store]"
-2. Calling out: "Stop doing X" / "Avoid these X" / "Don't buy X"
-3. Controversial admission: "I've stopped doing X, here's why"
-4. Superlative: "Biggest / Best / Worst / Craziest profit [thing]"
-5. Money moment: "I just found £X" / "I lost £X" / "£X profit in [store]"
-6. Secret reveal: "Secret code in [store]. Hidden in plain sight."
-7. Warning: "This mistake will cost you" / "AVOID these brands"
+RETENTION TECHNIQUES — weave these throughout:
+- Open loops: raise a question or tension early that only gets answered at the end
+- Pattern interrupts: unexpected turns that make the viewer reset and keep watching
+- Micro-rewards: small payoffs every few lines (a surprising stat, a relatable moment, a reveal)
+- Stakes: make the viewer feel something is at risk — money, time, a mistake they might be making
+- Pace variation: short punchy lines followed by a slightly longer one to create rhythm
+- Direct address: talk to ONE person, not an audience. "You" not "people".
 
-LOOPING ENDINGS (critical — use on most scripts):
-The last line of the script must loop back into the hook so the video plays seamlessly on repeat.
-When a viewer reaches the end, the last line flows naturally into the first line of the hook.
-This doubles watch time. Example:
+HOOK FORMATS (ranked by real performance for this creator):
+1. Time challenge: "X minutes in [store] and I found..."
+2. Calling out: "Stop doing X" / "Avoid these X"
+3. Controversial admission: "I've stopped doing X. Here's why."
+4. Superlative: "Biggest / Best / Worst / Craziest..."
+5. Money moment: "I just found £X" / "I lost £X" / "£X profit..."
+6. Secret reveal: "There's a code in [store] nobody talks about."
+7. Relatable situation: "POV: you're in [store] with no idea what you're doing."
+
+LOOPING ENDINGS (use on most scripts — this is critical):
+The last line must connect back into the hook so the video loops seamlessly on repeat.
+The viewer reaches the end and flows straight back into the beginning without noticing.
+This is one of the biggest drivers of watch time for this creator.
+Example:
   HOOK: "10 minutes in Home Bargains and I found £140 profit."
   LAST LINE: "And all of that in just 10 minutes in Home Bargains."
-The loop line replaces a traditional CTA on most scripts. Only use "Follow for more" occasionally.
-NEVER tell people to click a link unless it is specifically a course or affiliate promo script.
+Only use "Follow for more" occasionally as an alternative. Never use link CTAs.
 
 PRODUCT PLACEHOLDERS:
-In any shopping or store visit script, product names and prices are unknown until shoot day.
-Always write XXXXX for product names and £XXXXX for unknown prices.
-Only use real specific numbers in educational scripts where no live product find is involved.
+Shopping and store visit scripts use XXXXX for product names and £XXXXX for prices.
+These are filled in on shoot day when the actual products are found.
+Only use real numbers in educational or story-based scripts with no live product find.
 
-CTA RULES:
-- Most scripts: looping last line (no explicit CTA)
-- Occasionally: "Follow for more"
-- Affiliate promos only: "Comment [keyword] below"
-- Almost never: "Click the link in bio" or "Visit link in bio"
-
-ENGAGEMENT STRUCTURES (rotate):
+ENGAGEMENT STRUCTURES (rotate across the batch):
 - Problem → Agitate → Solution
-- Story arc (setup → conflict → resolution)
-- List ("3 things nobody tells you about...")
-- Tutorial / How-to (fast, under 20 seconds)
+- Story arc: setup → conflict → resolution
+- Myth-bust: "Everyone thinks X. But actually..."
+- Countdown / list with a twist at the end
 - Before / After
-- Myth-busting
+- Fast tutorial with a hook reveal at the end
 
 OUTPUT FORMAT — use EXACTLY this for each script:
 
 SCRIPT #[N] — [Topic / Angle Title]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOOK (0-3 seconds):
 [Hook line]
 
-[Body — one short spoken sentence per line]
+BODY:
+[One short spoken sentence per line, blank line between each]
 
-[Final line — loops back to hook OR occasional Follow for more]
+CTA:
+[Final line — loops back to hook, or Follow for more]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Estimated length: ~[X] seconds
-🎯 Engagement tactic: [tactic]
+🎯 Retention technique: [what keeps people watching]
 🔥 Hook type: [type]
-🎬 Filming suggestion: [where to film, what to show on camera]
 
 Number them clearly. Generate ALL requested scripts without stopping."""
 
@@ -170,6 +178,10 @@ Video {i} ({a.get('_platform','').upper()}):
     else:
         analysis_text = "\n\nNo reference videos provided — use your expert knowledge of what performs well in this niche."
 
+    shop_text = ""
+    if profile.get("shop_list", "").strip():
+        shop_text = f"\n\nSHOP LIST — STORES AT THIS SHOOT LOCATION:\n{profile['shop_list'].strip()}\nUse these stores when writing shopping trip and store visit scripts. Spread the scripts across different stores where possible — don't repeat the same store too often."
+
     topics_text = ""
     if custom_topics.strip():
         topics_text = f"\n\nCUSTOM TOPIC FOCUS:\n{custom_topics.strip()}"
@@ -179,7 +191,7 @@ Video {i} ({a.get('_platform','').upper()}):
 
     return (
         f"Generate {n_scripts} complete video scripts.\n\n"
-        f"{profile_text}{analysis_text}{topics_text}{variety_text}{hook_text}\n\n"
+        f"{profile_text}{analysis_text}{shop_text}{topics_text}{variety_text}{hook_text}\n\n"
         f"Write all {n_scripts} scripts now, numbered clearly."
     )
 
@@ -200,11 +212,11 @@ def _parse_scripts(raw: str) -> list[dict]:
         title  = title_match.group(2).strip() if title_match else f"Script {number}"
 
         # Extract sections
-        hook_match   = re.search(r"HOOK \(0[–—-]3 seconds?\):\s*\n(.+?)(?=\n\nBODY:|\Z)", part, re.DOTALL)
+        hook_match   = re.search(r"HOOK\s*\([^)]*\):\s*\n(.+?)(?=\n\nBODY:|\Z)", part, re.DOTALL)
         body_match   = re.search(r"BODY:\s*\n(.+?)(?=\n\nCTA:|\Z)", part, re.DOTALL)
-        cta_match    = re.search(r"CTA:\s*\n(.+?)(?=\n━+|\Z)", part, re.DOTALL)
+        cta_match    = re.search(r"CTA:\s*\n(.+?)(?=\n━+|\n📊|\Z)", part, re.DOTALL)
         length_match = re.search(r"📊 Estimated length: (.+?)(?:\n|$)", part)
-        tactic_match = re.search(r"🎯 Engagement tactic: (.+?)(?:\n|$)", part)
+        tactic_match = re.search(r"🎯 (?:Retention technique|Engagement tactic): (.+?)(?:\n|$)", part)
         hook_t_match = re.search(r"🔥 Hook type: (.+?)(?:\n|$)", part)
 
         scripts.append({
@@ -259,9 +271,9 @@ def render():
     # ── Analysis selection ────────────────────────────────────────────────────
     st.markdown("#### 2. Reference Video Analyses (optional)")
 
-    # Use analyses from current session or from saved files
     session_analyses = st.session_state.get("selected_analyses", [])
     saved_names      = list_analyses()
+    current_profile_name = profile.get("profile_name", "") if profile else ""
 
     analyses_to_use: list[dict] = []
 
@@ -271,16 +283,46 @@ def render():
             analyses_to_use = session_analyses
 
     if saved_names:
-        chosen_saved = st.multiselect(
-            "Or load saved analyses",
-            saved_names,
-            key="gen_analyses",
-        )
-        for name in chosen_saved:
-            try:
-                analyses_to_use.extend(load_analysis(name))
-            except Exception:
-                pass
+        # Filter saved analyses to those tagged to the current profile, with option to show all
+        def _analyses_for_profile(names: list[str], profile_name: str) -> list[str]:
+            """Return saved analysis names tagged to this profile (or untagged)."""
+            matched = []
+            for n in names:
+                try:
+                    data = load_analysis(n)
+                    tags = {a.get("_profile") for a in data}
+                    if not profile_name or not any(tags - {None}):
+                        matched.append(n)
+                    elif profile_name in tags:
+                        matched.append(n)
+                except Exception:
+                    pass
+            return matched
+
+        profile_analyses = _analyses_for_profile(saved_names, current_profile_name)
+        other_count = len(saved_names) - len(profile_analyses)
+
+        show_all = st.checkbox(
+            f"Show all saved analyses ({other_count} from other profiles hidden)",
+            value=False,
+            key="gen_show_all_analyses",
+        ) if other_count > 0 else False
+
+        display_names = saved_names if show_all else profile_analyses
+
+        if display_names:
+            chosen_saved = st.multiselect(
+                "Load saved analyses",
+                display_names,
+                key="gen_analyses",
+            )
+            for name in chosen_saved:
+                try:
+                    analyses_to_use.extend(load_analysis(name))
+                except Exception:
+                    pass
+        elif not session_analyses:
+            st.caption("No saved analyses for this profile yet.")
 
     if not analyses_to_use:
         st.info("💡 No analyses selected — Quick Generate mode will be used (Claude uses its own niche knowledge).")
@@ -289,7 +331,7 @@ def render():
     st.markdown("#### 3. Generation Settings")
     col1, col2 = st.columns(2)
     with col1:
-        n_scripts = st.slider("Number of scripts", min_value=10, max_value=15, value=10, key="n_scripts")
+        n_scripts = st.slider("Number of scripts", min_value=1, max_value=12, value=10, key="n_scripts")
         variety   = st.radio(
             "Script variety",
             ["Maximum variety (different hooks, structures, topics)",

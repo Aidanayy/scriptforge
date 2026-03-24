@@ -189,6 +189,14 @@ def render():
         # ── Section 4: Content ────────────────────────────────────────────────
         st.markdown("### 📝 Content")
 
+        shop_list = st.text_area(
+            "Shop list — stores at your shoot location (optional)",
+            value=loaded.get("shop_list", ""),
+            placeholder="List the shops available at your usual shoot location, one per line\ne.g.\nHome Bargains\nB&M\nBoots\nTKMAXX",
+            height=100,
+            help="Used by the script generator to suggest store-specific hooks and shopping trip scripts.",
+        )
+
         topics = st.text_area(
             "Key topics / content pillars *",
             value=loaded.get("topics", ""),
@@ -260,6 +268,7 @@ def render():
             "phrases_use":   phrases_use.strip(),
             "phrases_avoid": phrases_avoid.strip(),
             "best_content":  best_content.strip(),
+            "shop_list":     shop_list.strip(),
             "topics":        topics.strip(),
             "product":       product.strip(),
             "ctas":          ctas,
