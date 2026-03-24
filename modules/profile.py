@@ -25,7 +25,7 @@ def render():
     st.markdown(
         "<h1 style='font-size:1.8rem;font-weight:900;margin-bottom:4px;'>📋 Creator Profile</h1>"
         "<div style='color:#888;font-size:0.85rem;margin-bottom:24px;'>"
-        "Build your creator profile so ScriptForge can write in your exact voice and style.</div>",
+        "Build your creator profile so ReelHaus can write in your exact voice and style.</div>",
         unsafe_allow_html=True,
     )
 
@@ -179,7 +179,7 @@ def render():
         best_content = st.text_area(
             "Example of your best performing content (optional) — Paste a script, caption, or video transcript that perfectly represents your voice",
             value=loaded.get("best_content", ""),
-            placeholder="Paste an example here — this is the single best style reference ScriptForge can use.",
+            placeholder="Paste an example here — this is the single best style reference ReelHaus can use.",
             height=120,
             help="The more specific this is, the more accurately Claude can match your voice.",
         )

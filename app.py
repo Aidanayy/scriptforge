@@ -1,5 +1,5 @@
 """
-ScriptForge — AI-powered social media script writing tool
+ReelHaus — AI-powered social media script writing tool
 for TikTok and Instagram Reels creators.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ load_dotenv()
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="ScriptForge",
+    page_title="ReelHaus",
     page_icon="🎬",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -68,7 +68,7 @@ def _sidebar() -> str:
     with st.sidebar:
         st.markdown(
             "<div style='font-size:1.8rem;font-weight:900;letter-spacing:-0.02em;"
-            "color:#7C3AED;margin-bottom:2px;'>🎬 ScriptForge</div>"
+            "color:#7C3AED;margin-bottom:2px;'>🎬 ReelHaus</div>"
             "<div style='font-size:0.72rem;color:#555;letter-spacing:0.12em;"
             "text-transform:uppercase;margin-bottom:20px;'>AI Script Writing Tool</div>",
             unsafe_allow_html=True,
@@ -108,7 +108,7 @@ def _sidebar() -> str:
 
         st.divider()
         st.markdown(
-            "<div style='font-size:0.65rem;color:#333;text-align:center;'>ScriptForge v1.0</div>",
+            "<div style='font-size:0.65rem;color:#333;text-align:center;'>ReelHaus v1.0</div>",
             unsafe_allow_html=True,
         )
 

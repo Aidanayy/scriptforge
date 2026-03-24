@@ -1,4 +1,4 @@
-# 🎬 ScriptForge
+# 🎬 ReelHaus
 
 AI-powered social media script writing tool for TikTok and Instagram Reels creators.
 
@@ -23,10 +23,10 @@ AI-powered social media script writing tool for TikTok and Instagram Reels creat
 ## Workflow
 
 ### Step 1 — Creator Profile (📋)
-Fill in your niche, audience, tone, content pillars, and CTA preferences. Save your profile. This is what ScriptForge uses to write in your exact voice.
+Fill in your niche, audience, tone, content pillars, and CTA preferences. Save your profile. This is what ReelHaus uses to write in your exact voice.
 
 ### Step 2 — Video Analyser (🎥)
-Paste up to 8 YouTube or TikTok URLs. ScriptForge will:
+Paste up to 8 YouTube or TikTok URLs. ReelHaus will:
 - Transcribe each video (YouTube captions or Whisper AI)
 - Use Claude to extract hooks, structure, engagement triggers, and viral patterns
 - Synthesise the top patterns across all videos
