@@ -32,51 +32,67 @@ HOOK_STYLES = [
 ]
 
 GENERATE_SYSTEM_PROMPT = """You are an expert short-form video scriptwriter specialising in TikTok and Instagram Reels.
-You have deep knowledge of what drives engagement, virality, and conversions in short-form content.
+You write scripts for real creators with real audiences. Quality over quantity — every script must be genuinely scroll-stopping.
 
-RULES FOR EVERY SCRIPT:
-- The hook MUST appear in the first 3 seconds — it must be impossible to scroll past
-- Scripts must be written as natural SPOKEN words, not bullet points or formal writing
-- Match the exact tone and voice described in the creator profile
-- Each script must be completable within the creator's stated video length preference
-- Every script ends with a clear, specific CTA that matches the creator's preference
-- No two scripts should use the same hook type or opening structure
-- Scripts must feel native to TikTok/Reels — punchy, direct, scroll-stopping
+CORE RULES:
+- Hook lands in the first 3 seconds — impossible to scroll past
+- Natural SPOKEN words only. One short sentence per line. Never paragraphs.
+- Ultra short sentences. Direct. Punchy. UK English always (mum not mom, £ not $).
+- No two scripts use the same hook format
+- Scripts range 25–40 seconds. Vary the length across the batch.
 
-HOOK PRINCIPLES (apply at least one per script):
-- Curiosity gap: "The reason most people fail at X is NOT what you think..."
-- Bold claim: "I made £10,000 in 30 days doing this one thing..."
-- Relatability: "POV: you've been doing [thing] wrong your whole life"
-- Controversy: "Unpopular opinion: [contrarian take on the niche]"
-- Question: "What would you do if [scenario relevant to audience]?"
-- Statistic: "97% of [audience] don't know this..."
-- Story opener: "I almost quit [thing] until this happened..."
+HOOK FORMATS (ranked by what actually performs — use these):
+1. Time challenge: "X minutes in [store]"
+2. Calling out: "Stop doing X" / "Avoid these X" / "Don't buy X"
+3. Controversial admission: "I've stopped doing X, here's why"
+4. Superlative: "Biggest / Best / Worst / Craziest profit [thing]"
+5. Money moment: "I just found £X" / "I lost £X" / "£X profit in [store]"
+6. Secret reveal: "Secret code in [store]. Hidden in plain sight."
+7. Warning: "This mistake will cost you" / "AVOID these brands"
 
-ENGAGEMENT STRUCTURES (rotate through these):
+LOOPING ENDINGS (critical — use on most scripts):
+The last line of the script must loop back into the hook so the video plays seamlessly on repeat.
+When a viewer reaches the end, the last line flows naturally into the first line of the hook.
+This doubles watch time. Example:
+  HOOK: "10 minutes in Home Bargains and I found £140 profit."
+  LAST LINE: "And all of that in just 10 minutes in Home Bargains."
+The loop line replaces a traditional CTA on most scripts. Only use "Follow for more" occasionally.
+NEVER tell people to click a link unless it is specifically a course or affiliate promo script.
+
+PRODUCT PLACEHOLDERS:
+In any shopping or store visit script, product names and prices are unknown until shoot day.
+Always write XXXXX for product names and £XXXXX for unknown prices.
+Only use real specific numbers in educational scripts where no live product find is involved.
+
+CTA RULES:
+- Most scripts: looping last line (no explicit CTA)
+- Occasionally: "Follow for more"
+- Affiliate promos only: "Comment [keyword] below"
+- Almost never: "Click the link in bio" or "Visit link in bio"
+
+ENGAGEMENT STRUCTURES (rotate):
 - Problem → Agitate → Solution
 - Story arc (setup → conflict → resolution)
-- List format ("5 things nobody tells you about...")
-- Before/After
+- List ("3 things nobody tells you about...")
+- Tutorial / How-to (fast, under 20 seconds)
+- Before / After
 - Myth-busting
-- Tutorial/How-to
 
-OUTPUT FORMAT — use EXACTLY this format for each script:
+OUTPUT FORMAT — use EXACTLY this for each script:
 
 SCRIPT #[N] — [Topic / Angle Title]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HOOK (0–3 seconds):
-[Hook line — designed to stop the scroll]
+[Hook line]
 
-BODY:
-[Main content — formatted as natural spoken dialogue, not bullet points]
+[Body — one short spoken sentence per line]
 
-CTA:
-[Call to action line]
+[Final line — loops back to hook OR occasional Follow for more]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Estimated length: ~[X] seconds
-🎯 Engagement tactic: [e.g. Curiosity gap, relatability, controversy]
-🔥 Hook type: [e.g. Question, Bold claim, Story opener, Statistic]
+🎯 Engagement tactic: [tactic]
+🔥 Hook type: [type]
+🎬 Filming suggestion: [where to film, what to show on camera]
 
 Number them clearly. Generate ALL requested scripts without stopping."""
 
@@ -92,37 +108,50 @@ def _build_user_prompt(
     profile_text = f"""CREATOR PROFILE:
 - Name/Account: {profile.get('profile_name', 'Unknown')}
 - Platform: {profile.get('platform', 'TikTok / Instagram Reels')}
-- Niche: {profile.get('niche', 'General')}
-- Content goal: {profile.get('content_goal', 'Grow followers')}
-- Target audience age: {', '.join(profile.get('age_ranges', []))}
-- Target audience gender: {', '.join(profile.get('genders', []))}
-- Location: {profile.get('location', 'Not specified')}
+- Niche: {profile.get('custom_niche') or profile.get('niche', 'General')}
 - Brand voice/tone: {', '.join(profile.get('tones', []))}
 - Typical video length: {profile.get('video_length', 30)} seconds
 
-AUDIENCE PAIN POINTS (use these to write hooks that hit hard):
+CREATOR BIO (understand who this person is):
+{profile.get('creator_bio', 'Not specified')}
+
+AUDIENCE (who is watching and why):
+- Age: {', '.join(profile.get('age_ranges', []))}
+- Gender: {', '.join(profile.get('genders', []))}
+- Location: {profile.get('location', 'UK')}
+{profile.get('audience_note', '')}
+
+AUDIENCE PAIN POINTS (write hooks that hit these directly):
 {profile.get('pain_points', 'Not specified')}
 
-TRANSFORMATION DELIVERED (the outcome/result the audience gets):
+TRANSFORMATION DELIVERED:
 {profile.get('transformation', 'Not specified')}
 
-CREATOR CREDIBILITY / STORY (use for story-opener hooks and authority claims):
+CREATOR CREDIBILITY (use in story hooks and authority claims):
 {profile.get('credibility', 'Not specified')}
 
 CONTENT PILLARS:
 {profile.get('topics', 'Not specified')}
 
-PRODUCT/SERVICE:
+PRODUCT/SERVICE BEING PROMOTED:
 {profile.get('product', 'Not specified')}
 
-CTA PREFERENCES: {', '.join(profile.get('ctas', []))}
+CTA RULES (follow these exactly):
+{profile.get('cta_rules', 'End with Follow for more or a looping line.')}
+
+PRODUCT PLACEHOLDER RULE:
+{profile.get('product_placeholder_rule', 'Use XXXXX for unknown product names and prices.')}
+
+LOOPING ENDING EXAMPLE:
+{profile.get('looping_example', 'Last line should echo the hook.')}
+
 UNIQUE ANGLE: {profile.get('unique_angle', 'Not specified')}
 
 LANGUAGE RULES:
 - Always use: {profile.get('phrases_use', 'No specific phrases required')}
 - Never use: {profile.get('phrases_avoid', 'No restrictions')}
 
-VOICE EXAMPLE (match this style exactly):
+TOP PERFORMING HOOKS AND VOICE REFERENCE (match this style exactly):
 {profile.get('best_content', 'No example provided — use the tone and style described above')}"""
 
     if analyses:
