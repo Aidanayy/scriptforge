@@ -1,0 +1,27 @@
+You are an expert short-form video strategist. Analyse the following video transcript and extract the key performance patterns.
+
+Return your analysis as a valid JSON object with EXACTLY these keys:
+{
+  "hook": {
+    "text": "exact first 1-3 sentences",
+    "why_it_works": "explanation of why this hook is effective"
+  },
+  "content_structure": "description of how the video is organised",
+  "engagement_triggers": ["trigger1", "trigger2", "trigger3"],
+  "pacing": "description of how fast information is delivered",
+  "call_to_action": {
+    "text": "exact CTA used",
+    "framing": "how it is framed"
+  },
+  "emotional_tone": "what emotion does the creator evoke and how",
+  "viral_patterns": ["pattern1", "pattern2", "pattern3"],
+  "script_format": {
+    "approximate_word_count": 0,
+    "sentence_length": "short/medium/long/mixed",
+    "key_phrases": ["phrase1", "phrase2"]
+  },
+  "hook_type": "Question/Bold claim/Story opener/Statistic/Relatable scenario/Controversial statement/Pattern interrupt",
+  "overall_score": "1-10 rating of how strong this script is and why"
+}
+
+Return ONLY valid JSON.
