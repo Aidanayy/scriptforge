@@ -91,17 +91,39 @@ def _build_user_prompt(
 ) -> str:
     profile_text = f"""CREATOR PROFILE:
 - Name/Account: {profile.get('profile_name', 'Unknown')}
+- Platform: {profile.get('platform', 'TikTok / Instagram Reels')}
 - Niche: {profile.get('niche', 'General')}
 - Content goal: {profile.get('content_goal', 'Grow followers')}
 - Target audience age: {', '.join(profile.get('age_ranges', []))}
 - Target audience gender: {', '.join(profile.get('genders', []))}
 - Location: {profile.get('location', 'Not specified')}
 - Brand voice/tone: {', '.join(profile.get('tones', []))}
-- Content pillars: {profile.get('topics', 'Not specified')}
-- Product/service: {profile.get('product', 'Not specified')}
-- CTA preferences: {', '.join(profile.get('ctas', []))}
 - Typical video length: {profile.get('video_length', 30)} seconds
-- Unique angle: {profile.get('unique_angle', 'Not specified')}"""
+
+AUDIENCE PAIN POINTS (use these to write hooks that hit hard):
+{profile.get('pain_points', 'Not specified')}
+
+TRANSFORMATION DELIVERED (the outcome/result the audience gets):
+{profile.get('transformation', 'Not specified')}
+
+CREATOR CREDIBILITY / STORY (use for story-opener hooks and authority claims):
+{profile.get('credibility', 'Not specified')}
+
+CONTENT PILLARS:
+{profile.get('topics', 'Not specified')}
+
+PRODUCT/SERVICE:
+{profile.get('product', 'Not specified')}
+
+CTA PREFERENCES: {', '.join(profile.get('ctas', []))}
+UNIQUE ANGLE: {profile.get('unique_angle', 'Not specified')}
+
+LANGUAGE RULES:
+- Always use: {profile.get('phrases_use', 'No specific phrases required')}
+- Never use: {profile.get('phrases_avoid', 'No restrictions')}
+
+VOICE EXAMPLE (match this style exactly):
+{profile.get('best_content', 'No example provided — use the tone and style described above')}"""
 
     if analyses:
         analysis_text = "\n\nREFERENCE VIDEO PATTERNS:\n"

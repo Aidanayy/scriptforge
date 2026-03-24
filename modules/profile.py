@@ -18,7 +18,7 @@ TONES        = ["Casual & fun", "Professional", "Motivational", "Controversial/e
                 "Educational", "Storytelling", "Humorous"]
 CTAS         = ["Follow for more", "Visit link in bio", "Comment below",
                 "Share this video", "DM me", "Buy now"]
-FREQUENCIES  = ["Daily", "3–5x per week", "1–2x per week"]
+PLATFORMS    = ["TikTok", "Instagram Reels", "Both"]
 
 
 def render():
@@ -47,6 +47,10 @@ def render():
 
     # ── Form ──────────────────────────────────────────────────────────────────
     with st.form("profile_form"):
+
+        # ── Section 1: Basics ─────────────────────────────────────────────────
+        st.markdown("### 🎯 The Basics")
+
         profile_name = st.text_input(
             "Profile name *",
             value=loaded.get("profile_name", ""),
@@ -73,31 +77,117 @@ def render():
                 if loaded.get("content_goal") in CONTENT_GOALS else 0,
             )
 
+        col_plat, col_len = st.columns(2)
+        with col_plat:
+            platform = st.selectbox(
+                "Platform *",
+                PLATFORMS,
+                index=PLATFORMS.index(loaded.get("platform", "Both")) if loaded.get("platform") in PLATFORMS else 2,
+            )
+        with col_len:
+            video_length = st.slider(
+                "Typical video length (seconds)",
+                min_value=15,
+                max_value=90,
+                value=loaded.get("video_length", 30),
+                step=5,
+            )
+
+        st.divider()
+
+        # ── Section 2: Audience ───────────────────────────────────────────────
+        st.markdown("### 👥 Your Audience")
+
         col3, col4 = st.columns(2)
         with col3:
             age_ranges = st.multiselect(
-                "Target audience age range",
+                "Age range",
                 AGE_RANGES,
                 default=loaded.get("age_ranges", ["18–24", "25–34"]),
             )
         with col4:
             genders = st.multiselect(
-                "Target audience gender",
+                "Gender",
                 GENDERS,
                 default=loaded.get("genders", ["All"]),
             )
 
         location = st.text_input(
-            "Target audience location",
+            "Location (optional)",
             value=loaded.get("location", ""),
             placeholder="e.g. UK-based, mainly London",
         )
+
+        pain_points = st.text_area(
+            "Audience pain points * — What are their biggest frustrations, fears, or problems?",
+            value=loaded.get("pain_points", ""),
+            placeholder=(
+                "e.g. They work 9–5 jobs they hate and feel stuck. They want financial freedom "
+                "but think you need lots of money to start. They've tried side hustles before and failed."
+            ),
+            height=110,
+            help="This is the most important field — hooks land hardest when they speak directly to a real pain.",
+        )
+
+        transformation = st.text_area(
+            "Transformation you deliver * — What result or outcome does your content give them?",
+            value=loaded.get("transformation", ""),
+            placeholder=(
+                "e.g. They learn how to start an Amazon FBA business from scratch with under £500 "
+                "and replace their salary within 12 months."
+            ),
+            height=90,
+            help="Used to write outcome-driven hooks and script conclusions.",
+        )
+
+        st.divider()
+
+        # ── Section 3: Voice & Style ──────────────────────────────────────────
+        st.markdown("### 🎤 Voice & Style")
 
         tones = st.multiselect(
             "Brand voice / tone *",
             TONES,
             default=loaded.get("tones", ["Casual & fun"]),
         )
+
+        credibility = st.text_area(
+            "Your credibility / personal story (optional) — What gives you authority in this niche?",
+            value=loaded.get("credibility", ""),
+            placeholder=(
+                "e.g. I quit my £28k job to sell on Amazon and now make £15k/month. "
+                "I've helped 200+ students start their own FBA business."
+            ),
+            height=90,
+            help="Used to write authentic story-opener hooks and credibility claims.",
+        )
+
+        phrases_use = st.text_area(
+            "Phrases / words to ALWAYS use (optional) — Your catchphrases, slang, or signature language",
+            value=loaded.get("phrases_use", ""),
+            placeholder="e.g. 'real talk', 'no gatekeeping', 'this is your sign', 'genuinely'",
+            height=70,
+        )
+
+        phrases_avoid = st.text_area(
+            "Phrases / words to NEVER use (optional) — Off-brand language or topics to avoid",
+            value=loaded.get("phrases_avoid", ""),
+            placeholder="e.g. Don't mention competitors by name. Avoid the word 'hustle'. No get-rich-quick language.",
+            height=70,
+        )
+
+        best_content = st.text_area(
+            "Example of your best performing content (optional) — Paste a script, caption, or video transcript that perfectly represents your voice",
+            value=loaded.get("best_content", ""),
+            placeholder="Paste an example here — this is the single best style reference ScriptForge can use.",
+            height=120,
+            help="The more specific this is, the more accurately Claude can match your voice.",
+        )
+
+        st.divider()
+
+        # ── Section 4: Content ────────────────────────────────────────────────
+        st.markdown("### 📝 Content")
 
         topics = st.text_area(
             "Key topics / content pillars *",
@@ -119,26 +209,11 @@ def render():
             default=loaded.get("ctas", ["Follow for more"]),
         )
 
-        posting_freq = st.selectbox(
-            "Posting frequency",
-            FREQUENCIES,
-            index=FREQUENCIES.index(loaded.get("posting_freq", FREQUENCIES[1]))
-            if loaded.get("posting_freq") in FREQUENCIES else 1,
-        )
-
-        video_length = st.slider(
-            "Typical video length (seconds)",
-            min_value=15,
-            max_value=90,
-            value=loaded.get("video_length", 30),
-            step=5,
-        )
-
         competitors = st.text_area(
             "Competitor / inspiration accounts (optional)",
             value=loaded.get("competitors", ""),
             placeholder="List usernames, one per line",
-            height=80,
+            height=70,
         )
 
         unique_angle = st.text_area(
@@ -160,6 +235,12 @@ def render():
         if not topics.strip():
             st.error("Please fill in your content pillars.")
             return
+        if not pain_points.strip():
+            st.error("Please fill in your audience pain points — this is essential for strong hooks.")
+            return
+        if not transformation.strip():
+            st.error("Please fill in the transformation you deliver.")
+            return
 
         niche = custom_niche.strip() if niche_choice == "Other" and custom_niche.strip() else niche_choice
 
@@ -167,15 +248,21 @@ def render():
             "profile_name":  profile_name.strip(),
             "niche":         niche,
             "custom_niche":  custom_niche.strip(),
+            "platform":      platform,
             "content_goal":  content_goal,
             "age_ranges":    age_ranges,
             "genders":       genders,
             "location":      location.strip(),
+            "pain_points":   pain_points.strip(),
+            "transformation": transformation.strip(),
             "tones":         tones,
+            "credibility":   credibility.strip(),
+            "phrases_use":   phrases_use.strip(),
+            "phrases_avoid": phrases_avoid.strip(),
+            "best_content":  best_content.strip(),
             "topics":        topics.strip(),
             "product":       product.strip(),
             "ctas":          ctas,
-            "posting_freq":  posting_freq,
             "video_length":  video_length,
             "competitors":   competitors.strip(),
             "unique_angle":  unique_angle.strip(),
